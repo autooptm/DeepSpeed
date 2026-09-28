@@ -1,3 +1,62 @@
+<div align="center">
+  <a href="https://autooptm.com"><img src=".autooptm/logo.png" width="96" alt="AutoOptm"></a>
+
+  <h1>DeepSpeed · optimized by <a href="https://autooptm.com">AutoOptm</a></h1>
+
+  <p><b>2.53x faster end to end</b> on the command below, output verified against the stock program.</p>
+
+  <p>
+    <a href="https://autooptm.com"><img alt="speedup" src="https://img.shields.io/badge/end--to--end-2.53x-2ea44f"></a>
+    <a href="https://github.com/deepspeedai/DeepSpeed/commit/7075430aa754eb97ecede4cfb2a14ad497d9ab40"><img alt="base" src="https://img.shields.io/badge/upstream-7075430aa754-blue"></a>
+    <img alt="card" src="https://img.shields.io/badge/measured%20on-RTX%204090-lightgrey">
+  </p>
+</div>
+
+> This is a fork of [deepspeedai/DeepSpeed](https://github.com/deepspeedai/DeepSpeed) at commit
+> [`7075430aa754`](https://github.com/deepspeedai/DeepSpeed/commit/7075430aa754eb97ecede4cfb2a14ad497d9ab40).
+> **What is measured here is a benchmark program, not upstream library code**: `benchmark/deepspeed/run.py`
+> does not exist upstream — it was written to drive DeepSpeed's inference engine, then optimized.
+> The commit on top of upstream adds that program in its optimized form; the diff against its own
+> unoptimized version is kept verbatim at [`.autooptm/autooptm.patch`](.autooptm/autooptm.patch).
+> Everything under `deepspeed/` is upstream, untouched.
+
+## The result
+
+| | |
+|---|---|
+| **Command** | `python benchmark/deepspeed/run.py` |
+| **Entry point** | `benchmark/deepspeed/run.py` (added by this fork) |
+| **Unit measured** | one batch-1 autoregressive decode run through DeepSpeed's inference engine (end to end) |
+| **Before (stock benchmark)** | 0.4796 s per unit |
+| **After (this tree, all switches default ON)** | 0.1912 s per unit |
+| **Speedup** | **2.53x** end to end, noise floor of the host 0.49% |
+| **Output** | verified against the frozen stock reference on the pinned inputs and on a held-out set the optimiser never saw |
+
+### What changed
+
+| File | Where | Gain (alone) |
+|---|---|---|
+| `benchmark/deepspeed/run.py` | build_engine() | 1.64x |
+| `benchmark/deepspeed/run.py` | generate_one() | 1.34x |
+
+## Reproduce
+
+```bash
+git clone https://github.com/autooptm/DeepSpeed-ao.git
+cd DeepSpeed-ao
+# set up DeepSpeed exactly as upstream documents, then:
+python benchmark/deepspeed/run.py
+```
+
+The diff against upstream is one commit: `git log -1 -p` shows it. It adds the benchmark program
+only; `.autooptm/autooptm.patch` is that program's optimization diff against its own stock form.
+
+---
+
+<div align="center"><sub>Optimized by <a href="https://autooptm.com">AutoOptm</a> — point it at a repository, get back a verified speedup and the patch.</sub></div>
+
+---
+
 [![License Apache 2.0](https://badgen.net/badge/license/apache2.0/blue)](https://github.com/deepspeedai/DeepSpeed/blob/master/LICENSE)
 [![PyPI version](https://badge.fury.io/py/deepspeed.svg)](https://pypi.org/project/deepspeed/)
 [![Downloads](https://static.pepy.tech/badge/deepspeed)](https://pepy.tech/project/deepspeed)
